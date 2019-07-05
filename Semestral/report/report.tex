@@ -1,0 +1,75 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[czech]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xspace}
+\usepackage[colorlinks]{hyperref}
+\usepackage{caption}
+
+\usepackage[left=3cm,right=3cm,top=3cm,bottom=3cm]{geometry}
+\usepackage{tikz}
+\usepackage{float}
+\floatstyle{boxed} 
+\restylefloat{figure}
+
+
+\floatplacement{figure}{H}
+
+\author{Ondřej Perný}
+\title
+	{{BI-ZUM - Rozeznávání znaků abecedy pomocí GA} \\ 
+}
+
+\begin{document}
+
+% vytištění úvodu na vlastní stránku
+
+\maketitle
+
+
+\section{Popis}
+Cílem této úlohy je pomocí genetického algoritmu vyšlechtit pětici bodů, které od sebe dokáží co nejlépe odlišit obrázky 16x16 pixelů v .bmp formátu. Tyto obrázky představují jednotlivé písmena anglické abecedy.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=0.5\textwidth]{a.png}
+  \end{center}
+  \caption{Ukázka písmene A ze vstupního datasetu (16x16 pixelů)}
+  \label{fig:image6}
+\end{figure}
+
+\newpage
+\section{Řešení}
+\subsection{Reprezentace}
+Každý jedinec je tvořen třídou "Individual". Tento jedinec je reprezentován 5 body/souřadnicemi (x, y). Pro jednodušší práci je ale každá z těchto souřadnic reprezentována v paměti jen jedním číslem, které lze převádět na odpovídající souřadnice. Každý jedinec je při jeho vzniku kontrolován, jestli je validní, předcházím tím potřebě opravovat chybné jedince.
+
+Hlavní třídou programu je "Population", která zastřešuje všechny jedince. Třída si pamatuje vždy jedince aktuální generace a obsahuje counter generace, aby bylo jasné o kterou generaci se jedná.
+\subsection{Inicializace}
+Inicializace jedince se provádí náhodným výběrem pěti bodů z množiny platných bodů. 
+\subsection{Ohodnocení}
+Ohodnocení jedince zajišťuje fitness funkce. Čím větší hodnotu má, tím schopnější je daný jedinec. Jeden bod je připočítám za každou kombinaci obrázků, které od sebe dokáže jedinec rozpoznat bezkonfliktně. Maximální hodnota je 650. 
+\subsection{Selekce}
+Selekce je prováděná klasickou "tournament selection". Tedy vyberu vždy k jedinců z kompletní populace a vyberu nejlepšího. Toto opakuji dokud nemám požadovaný počet jedinců.
+\subsection{Náhrada populace}
+Náhrada probíhá nejprve selekcí jedinců(viz. tournament) a následně křížením těchto vybraných jedinců, případně jejich mutací. Každý jedinec má danou pravděpodobnostní šanci mutovat. Jedinec mutuje ještě za předpokladu, že byl vytvořen křížením, ale stejný jedinec již v nové populaci je - nechci redundantní jedince. Mutace probíhá prohozením jednoho nebo dvou bodů. Křížení probýhá metodou "single-point crossover".
+
+
+\newpage
+\section{Experimenty}
+\subsection{Elitismus}
+Řešení s elitismem, tedy zachovánáním nejlepších jedinců do další generace, dosahovalo podobných výsledků jako řešení bez, avšak s menším počtem generací, neboť toto řešení eliminuje klesání fitness nejlepšího jedince z populace. Je tedy použito ve finální verzi.
+\subsection{Fitness sharing}
+"Fitness sharing" je metoda pro škálování fitness jedinců, podle jejich blízkosti. Snaží se tedy bránit konvergenci jedinců do hustých oblastí, naopak podporuje jedince v řídkých oblastech. Vzdálenost byla počítáná jako počet bodů, kterými se jednotliví jedinci liší. Výsledkem použítí této motody bylo různorodější rozprostření jednotlivých jedinců, ale celkové fitness jedinců se nezlepšilo, naopak častá konvergence fitness k hodnotě 640(asi velký počet různorodých jedinců, pro toto řešení) a bylo náročné najít lepší ohodnocení. Proto tato metoda nakonec používána není(v kódu implementována je, jen je zakomentované její užití).
+\subsection{Ostrovní model}
+Na začátku šlechtění si můžeme vybrat jestli použijeme jednu populaci, nebo dvě populace od sebe izolované - ostrovní model, které si občas vymění některé jedince.
+\subsection{Katastrofa}
+Katastrofa pobije většinu nejlepších jedinců, dává tedy možnost evoluce jinak slabším jedincům, kteří mají ale šanci se nakonec dostat k lepším výsledkům, např. když předchozí generace příliš konvergovala k nějakému řešení, které nebylo dostatečné.
+
+
+
+\end{document}
